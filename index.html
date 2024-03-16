@@ -1,0 +1,119 @@
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>Data-driven continuous color | Sample | ArcGIS Maps SDK for JavaScript 4.28</title>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/themes/light/main.css" />
+    <script src="https://js.arcgis.com/4.28/"></script>
+
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+
+    <script>
+      require(["esri/Map", "esri/views/MapView", "esri/layers/FeatureLayer", "esri/widgets/Legend"], (
+        Map,
+        MapView,
+        FeatureLayer,
+        Legend
+      ) => {
+        const defaultSym = {
+          type: "simple-fill", // autocasts as new SimpleFillSymbol()
+          outline: {
+            // autocasts as new SimpleLineSymbol()
+            color: [128, 128, 128, 0.2],
+            width: "0.5px"
+          }
+        };
+
+
+        const renderer = {
+          type: "simple", // autocasts as new SimpleRenderer()
+          symbol: defaultSym,
+          label: "U.S. State",
+          visualVariables: [
+            {
+              type: "color",
+              field: "TotalPubli",
+              normalizationField: "TotalPriva",
+              legendOptions: {
+                title: "Number of public schools per private school"
+              },
+              stops: [
+                {
+                  value: 4,
+                  color: "#F9EBEA",
+                  label: "<3"
+                },
+                {
+                  value: 8,
+                  color: "#7B241C",
+                  label: ">7"
+                }
+              ]
+            }
+          ]
+        };
+
+        const povLayer = new FeatureLayer({
+          url:
+            "https://services.arcgis.com/V6ZHFr6zdgNZuVG0/ArcGIS/rest/services/PrivateSchoolEnrollmentNoRendering/FeatureServer/0",
+          renderer: renderer,
+          title: "Ratio of public to private schools (by state)",
+          popupTemplate: {
+            // autocasts as new PopupTemplate()
+            title: "{state_name}",
+            content: "{state_name} has {TotalPubli} public schools and {TotalPriva} private schools.",
+            fieldInfos: [
+              {
+                fieldName: "TotalPubli",
+                format: {
+                  digitSeparator: true,
+                  places: 0
+                }
+              },
+              {
+                fieldName: "TotalPriva",
+                format: {
+                  digitSeparator: true,
+                  places: 0
+                }
+              }
+            ]
+          }
+        });
+
+        const map = new Map({
+          basemap: "gray-vector",
+          layers: [povLayer]
+        });
+
+        const view = new MapView({
+          container: "viewDiv",
+          map: map,
+          center: [-87.6, 41.8],
+          zoom: 3.8
+        });
+
+        view.ui.add(
+          new Legend({
+            view: view
+          }),
+          "top-right"
+        );
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="viewDiv"></div>
+  </body>
+</html>
